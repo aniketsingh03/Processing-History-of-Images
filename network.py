@@ -5,7 +5,7 @@ import torch
 class Net(nn.Module):
     def __init__(self):
         super(Net, self).__init__()
-        self.numberOfPoolingMethods = 2
+        self.numberOfPoolingMethods = 3
         self.conv1 = nn.Conv2d(3, 8, 3, padding=1) #in_channels,out_channels,kernel_size respectively
         self.conv2 = nn.Conv2d(8, 16, 3, padding=1)
         self.conv3 = nn.Conv2d(16, 32, 3, padding=1)
@@ -15,6 +15,15 @@ class Net(nn.Module):
         self.conv7 = nn.Conv2d(256, 512, 3, padding=1)
         self.conv8 = nn.Conv2d(512, 1024, 3, padding=1)
         
+        nn.init.xavier_uniform(conv1.weight)
+        nn.init.xavier_uniform(conv2.weight)
+        nn.init.xavier_uniform(conv3.weight)
+        nn.init.xavier_uniform(conv4.weight)
+        nn.init.xavier_uniform(conv5.weight)
+        nn.init.xavier_uniform(conv6.weight)
+        nn.init.xavier_uniform(conv7.weight)
+        nn.init.xavier_uniform(conv8.weight)
+
         self.bn2 = nn.BatchNorm2d(16)
         self.bn3 = nn.BatchNorm2d(32)
         self.bn4 = nn.BatchNorm2d(64)
@@ -33,7 +42,23 @@ class Net(nn.Module):
         self.fc1 = nn.Linear(num_fc1, num_fc1)
         self.fc2 = nn.Linear(num_fc1, 5)
         
-    def forward(self, x, process):
+    def variancePooling(self, x):
+        num_features = x.size()[0] #assuming (featx512x512) tensor
+        a = torch.var(x[0,:,:]).view(1, 1)
+        for i in range(1, num_features):
+            a = torch.cat((a, torch.var(x[i,:,:]).view(1, 1)))
+        a = a.view(-1,num_features)    
+        return a            
+    
+    def minPooling(self, x):
+        num_features = x.size()[0]
+        a = torch.min(x[0,:,:]).view(1, 1)
+        for i in range(1, num_features):
+            a = torch.cat((a, torch.min(x[i,:,:]).view(1, 1)))
+        a = a.view(-1, num_features)
+        return a
+    
+    def forward(self, x, phase = 0):
         x = self.pool(F.relu(self.bn2(self.conv2(self.conv1(x)))))
         x = self.pool(F.relu(self.bn3(self.conv3(x))))
         x = self.pool(F.relu(self.bn4(self.conv4(x))))
@@ -44,28 +69,20 @@ class Net(nn.Module):
         x = F.relu(self.bn8(self.conv8(x)))
         
         #total number of pooling methods must be 'numberOfPoolingMethods'
-        #calculating average pool
-        a = self.avgPoolLastlayer(x)
-        #calculating max pool
-        b = self.maxPoolLastLayer(x)
-        #TODO: according to the paper two more poolings have to be done namely minimum and variance.
-        
-        #concatenating these to form (numberOfPoolingMethods,1024) feature martrix brfore feeding to fully connected layer  
-        #The value of numberOfPoolingMethods depends on the number of matrices concatenated here
-        x = torch.cat((a,b), 0)
-        print (x.size()) #should be (numberOfPoolingMethods,1024) as of now ie without min pooling and variance pooling layer
+        a = self.avgPoolLastlayer(x).view(-1,1024)
+        b = self.maxPoolLastLayer(x).view(-1,1024)
+        c = self.variancePooling(x)
+        d = self.minPooling(x)
+
+        x = torch.cat((a,b,c,d), 0).view(4096)
+        print (x.size()) 
         
         x = x.view(-1, 1024)
-        print (x.size())
+        print (x.size()) #should be (numberOfPoolingMethods,1024)
         
         x = self.dropoutLastLayer()
+        x = F.relu(self.fc1(x))
+        x = self.fc2(x)
+        x = self.Softmax(x)
+        
         return x
-    
-    #feature_matrix is a matrix consisting of (1024*numberOfPoolingMethods) dimensions/features fed into fully connected layers
-    def fullyConnected(self, feature_matrix):
-        feature_matrix = F.relu(self.fc1(feature_matrix))
-        feature_matrix = self.fc2(feature_matrix)
-        softmax_probs = self.Softmax(feature_matrix)
-        
-        return softmax_probs
-        
