@@ -17,5 +17,4 @@ def get_data(batch_size):
     M_test = [] #arbitrarily sized images
     C_test = [] #(512x512) images
 
-    return (M_tr, C_tr, M_val, C_val, M_test, C_test)
-    
+    return (M_tr, C_tr, M_val, C_val, M_test, C_test)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               

@@ -1,6 +1,7 @@
 import torch.nn as nn
 import torch.nn.functional as F
 import torch
+from custom_pooling import *
 
 class Net(nn.Module):
     def __init__(self):
@@ -15,14 +16,14 @@ class Net(nn.Module):
         self.conv7 = nn.Conv2d(256, 512, 3, padding=1)
         self.conv8 = nn.Conv2d(512, 1024, 3, padding=1)
         
-        nn.init.xavier_uniform(conv1.weight)
-        nn.init.xavier_uniform(conv2.weight)
-        nn.init.xavier_uniform(conv3.weight)
-        nn.init.xavier_uniform(conv4.weight)
-        nn.init.xavier_uniform(conv5.weight)
-        nn.init.xavier_uniform(conv6.weight)
-        nn.init.xavier_uniform(conv7.weight)
-        nn.init.xavier_uniform(conv8.weight)
+        nn.init.xavier_uniform(self.conv1.weight)
+        nn.init.xavier_uniform(self.conv2.weight)
+        nn.init.xavier_uniform(self.conv3.weight)
+        nn.init.xavier_uniform(self.conv4.weight)
+        nn.init.xavier_uniform(self.conv5.weight)
+        nn.init.xavier_uniform(self.conv6.weight)
+        nn.init.xavier_uniform(self.conv7.weight)
+        nn.init.xavier_uniform(self.conv8.weight)
 
         self.bn2 = nn.BatchNorm2d(16)
         self.bn3 = nn.BatchNorm2d(32)
@@ -41,22 +42,6 @@ class Net(nn.Module):
         num_fc1 = 1024*self.numberOfPoolingMethods
         self.fc1 = nn.Linear(num_fc1, num_fc1)
         self.fc2 = nn.Linear(num_fc1, 5)
-        
-    def variancePooling(self, x):
-        num_features = x.size()[0] #assuming (featx512x512) tensor
-        a = torch.var(x[0,:,:]).view(1, 1)
-        for i in range(1, num_features):
-            a = torch.cat((a, torch.var(x[i,:,:]).view(1, 1)))
-        a = a.view(-1,num_features)    
-        return a            
-    
-    def minPooling(self, x):
-        num_features = x.size()[0]
-        a = torch.min(x[0,:,:]).view(1, 1)
-        for i in range(1, num_features):
-            a = torch.cat((a, torch.min(x[i,:,:]).view(1, 1)))
-        a = a.view(-1, num_features)
-        return a
     
     def forward(self, x, phase = 0):
         x = self.pool(F.relu(self.bn2(self.conv2(self.conv1(x)))))
@@ -69,16 +54,15 @@ class Net(nn.Module):
         x = F.relu(self.bn8(self.conv8(x)))
         
         #total number of pooling methods must be 'numberOfPoolingMethods'
-        a = self.avgPoolLastlayer(x).view(-1,1024)
-        b = self.maxPoolLastLayer(x).view(-1,1024)
-        c = self.variancePooling(x)
-        d = self.minPooling(x)
+        a = self.avgPoolLastlayer(x).view(-1, 1024)
+        b = self.maxPoolLastLayer(x).view(-1, 1024)
+        min_pool_2D = MinPool2D(8)
+        variance_pool_2D = VariancePool2D(8)
+        c = min_pool_2D.forward(x).view(-1, 1024)
+        d = variance_pool_2D.forward(x).view(-1, 1024)
 
-        x = torch.cat((a,b,c,d), 0).view(4096)
-        print (x.size()) 
-        
-        x = x.view(-1, 1024)
-        print (x.size()) #should be (numberOfPoolingMethods,1024)
+        x = torch.cat((a,b,c,d), dim = 1).view(-1, 4096)
+        print (x.size()) #should be (Nx4096) for 4096 features in each image
         
         x = self.dropoutLastLayer()
         x = F.relu(self.fc1(x))
