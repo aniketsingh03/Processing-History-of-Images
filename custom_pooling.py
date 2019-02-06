@@ -1,8 +1,8 @@
 import torch
 
-class MinPool2D(torch.nn.Module):
+class AdaptiveMinPool2D(torch.nn.Module):
     def __init__(self, kernel_size):
-        super(MinPool2D, self).__init__()
+        super(AdaptiveMinPool2D, self).__init__()
         self.kernel_size = kernel_size
 
     def forward(self, x):
@@ -10,9 +10,9 @@ class MinPool2D(torch.nn.Module):
         x = x.view(N, C, int(H/self.kernel_size), W*self.kernel_size)
         return x.min(dim=3)[0].view(N, C, -1)
 
-class VariancePool2D(torch.nn.Module):
+class AdaptiveVariancePool2D(torch.nn.Module):
     def __init__(self, kernel_size):
-        super(VariancePool2D, self).__init__()
+        super(AdaptiveVariancePool2D, self).__init__()
         self.kernel_size = kernel_size
 
     def forward(self, x):
