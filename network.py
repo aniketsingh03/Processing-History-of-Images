@@ -43,6 +43,7 @@ class Net(nn.Module):
         self.dropoutLastLayer = nn.Dropout()
         
         #IP layers
+        #TODO: check whether we need mlp here or just fully connected layers will do
         num_fc1 = 1024*self.numberOfPoolingMethods
         self.fc1 = nn.Linear(num_fc1, num_fc1)
         self.fc2 = nn.Linear(num_fc1, 5)
@@ -101,6 +102,7 @@ class MLPNet(nn.Module):
        """2 layer MLP for training the model for images of 
        random dimensions.
        """
+       #TODO: check whether ReLU is needed here or not
        x = F.relu(self.fc1(x))
        x = self.fc2(x)
        x = self.Softmax(x)
