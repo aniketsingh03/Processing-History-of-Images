@@ -23,13 +23,6 @@ def get_data(batch_size):
     M_tr = read_images(os.path.join(DATASET_PATH, 'train/mtr'), batch_size) #arbitrarily sized images
     C_tr = read_images(os.path.join(DATASET_PATH, 'train/ctr'), batch_size) #(512x512) images
 
-    for c in C_tr:
-        for i in c:
-            print(i)
-        print('==============================')
-        print("")
-        print("")
-
     #validation set
     M_val = read_images(os.path.join(DATASET_PATH, 'val/mtr')) #arbitrarily sized images
     C_val = read_images(os.path.join(DATASET_PATH, 'val/ctr')) #(512x512) images
