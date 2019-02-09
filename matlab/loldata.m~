@@ -174,9 +174,9 @@ for k = 1:numfiles
   imwrite(x11, mtrpath, 'Quality',qFactor);
 end
 
-trainval = ["val" "test"];
+trainval = ['val' 'test'];
 for i = trainval
-    root = '../dataset/jpegs';
+    root = '../dataset/jpegs/val';
     folder = fullfile(root, i);
     fileFolder = fullfile(folder,'*.jpeg');
     mkdir(folder, 'mtr');
@@ -295,17 +295,17 @@ for i = trainval
         ctrpath = fullfile(writectr, sprintf('%sc12.jpeg', name));
         imwrite(lc2, ctrpath, 'Quality',qFactor);
 
-        % org image
-        writectr = fullfile(folder, 'ctr/org');
-        writemtr = fullfile(folder, 'mtr/org');
-        x11 = down960(X);
-        [xc1, xc2] = centrallyCrop(x11);
-        ctrpath = fullfile(writectr, sprintf('%sc1.jpeg', name));
-        imwrite(xc1, ctrpath, 'Quality',qFactor);
-        ctrpath = fullfile(writectr, sprintf('%sc2.jpeg', name));
-        imwrite(xc2, ctrpath, 'Quality',qFactor);
-        mtrpath = fullfile(writemtr, sprintf('%s.jpeg', name));
-        imwrite(x11, mtrpath, 'Quality',qFactor);
-    end
+  % org image
+  writectr = fullfile(folder, 'ctr/org');
+  writemtr = fullfile(folder, 'mtr/org');
+  x11 = down960(X);
+  [xc1, xc2] = centrallyCrop(x11);
+  ctrpath = fullfile(writectr, sprintf('%sc1.jpeg', name));
+  imwrite(xc1, ctrpath, 'Quality',qFactor);
+  ctrpath = fullfile(writectr, sprintf('%sc2.jpeg', name));
+  imwrite(xc2, ctrpath, 'Quality',qFactor);
+  mtrpath = fullfile(writemtr, sprintf('%s.jpeg', name));
+  imwrite(x11, mtrpath, 'Quality',qFactor);
+end
 end
 
