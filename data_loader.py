@@ -83,7 +83,7 @@ def read_images(dataset_path, batch_size=None):
     return data
 
 class Dataset(Dataset):
-    """a class to let torch manage the entire dataset    
+    """a class to let torch manage the entire dataset for training the CNN in phase 1  
     Arguments:
         image_data : collection of strings representing the image paths and labels tuples
         transform : the transform to be applied to the images
@@ -104,19 +104,57 @@ class Dataset(Dataset):
     def __len__(self):
         return len(self.image_paths)
 
+class MLPDataset(Dataset):
+    """a class to let torch manage the entire dataset for training MLP in phase 3  
+    Arguments:
+        moments : a tuple of (mom, labels) where:
+            mom -> tensor of (Nx4096) consisting of moments of all images
+            labels -> tensor of (Nx1) listing label of each corresponding image 
+    """
+    def __init__(self, moments):
+        self.mom, self.labels = moments
+
+    def __getitem__(self, index):
+        return self.mom[index], self.labels[index]
+
+    def __len__(self):
+        return len(self.mom)
+
+
+#TESTING PART
 
 # transformations = transforms.Compose([transforms.RandomCrop(32),
 #                                     transforms.ToTensor()])
 # dataset = Dataset(get_Ctr() ,transform=transformations)
-# train_loader = DataLoader(dataset, batch_size = len(dataset), shuffle = True, num_workers = 4)
+# train_loader = DataLoader(dataset, batch_size = 2, shuffle = True, num_workers = 4)
+# print (len(train_loader))
 
-# print ('num of batches ', len(dataset))
-# for i, (data,label) in enumerate(train_loader, 0):
+# print ('length of dataset is ', len(dataset))
+# inputs = []
+# labels = []
+# for i,(a,b) in enumerate(train_loader, 0):
+#     inputs = a
+#     labels = b
+# print ('size of inputs is ', inputs.shape)
+# for data in inputs:
+#     #print ('i is ', i)
+#     print ('size of data is ', data.shape)
 #     print ('data is ', data)
-#     print ('label is ', label)
+#     #print ('label is ', label)
 #     print ("="*30)
-# a = get_Ctr()
-# print (len(a))
-# for c in a:
-#     print(c)
-#     print('\n')
+# print('All LABELS are ', labels)    
+
+# a = torch.randn(10,4096)
+# b = labels
+# c = (a, b)
+# dataset = MLPDataset(c)
+# train_loader = DataLoader(dataset, batch_size = 2, shuffle = True, num_workers = 4)
+
+# for inputs,labels in train_loader:
+#     #inputs, labels = data
+#     #print ('i=', i)
+#     print('input is ', inputs)
+#     print('size of input is ', inputs.shape)
+#     print('label is ', labels)
+#     print('size of labels is', labels.shape)
+#     print('='*30)
