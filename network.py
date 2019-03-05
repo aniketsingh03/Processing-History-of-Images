@@ -81,25 +81,25 @@ class Net(nn.Module):
         d = variance_pool_2D.forward(x).view(-1, 1024)
         #print ("The shape after variance pooling is ", d.size())
         x = torch.cat((a,b,c,d), dim = 1).view(-1, 4096)
-        print ("The size of x after all poolings and concatenation is ", x.size()) #should be (Nx4096) for 4096 features in each image
+        #print ("The size of x after all poolings and concatenation is ", x.size()) #should be (Nx4096) for 4096 features in each image
         
         #just return the extracted moments of a batch in case of phase 2(val of phase=1)
         if (phase == 1):
             return x
         x = self.dropoutLastLayer(x)
 
-        print ("The size of x after dropout is ",x.size())
+        #print ("The size of x after dropout is ",x.size())
         
         #TODO check whether we need a ReLU here or not
         x = F.relu(self.fc1(x))
         x = self.fc2(x)
-        print ("dimension of x before softmax is ", x.size())
-        print ("x before softmax is ", x)
+        #print ("dimension of x before softmax is ", x.size())
+        #print ("x before softmax is ", x)
 
         #TODO check the dimension used in softmax below input is of shape (batch_size, num_classes) : num_classes = 5
         x = F.softmax(x, dim = 1)
-        print ("dimension of x after softmax is ", x.size())
-        print ("x after softmax is ", x)
+        #print ("dimension of x after softmax is ", x.size())
+        #print ("x after softmax is ", x)
         
         return x
 

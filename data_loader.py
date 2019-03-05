@@ -12,11 +12,11 @@ from PIL import Image
 DATASET_PATH = 'dataset/jpegs'
 
 LABEL = {
-    'org' : 1,
-    'high' : 2,
-    'low' : 3,
-    'tonal' : 4,
-    'denoise' : 5,
+    'org' : 0,
+    'high' : 1,
+    'low' : 2,
+    'tonal' : 3,
+    'denoise' : 4,
 }
 
 def get_Ctr():

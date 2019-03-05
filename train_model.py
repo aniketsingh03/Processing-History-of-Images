@@ -9,11 +9,6 @@ from network import *
 import numpy as np
 import time
 
-def myCrossEntropyLoss(outputs, labels):
-  batch_size = outputs.size()[0]
-  outputs = outputs[range(batch_size), labels] # pick the values corresponding to the labels
-  return -torch.sum(outputs)/num_examples
-
 def createLossAndOptimizer(net, learning_rate=0.001):
     """create loss and optimizer for the CNN
     """
@@ -33,6 +28,9 @@ def trainNet(net, batch_size, n_epochs, learning_rate):
     transformations = transforms.Compose([transforms.RandomRotation(90),transforms.ToTensor()])
     
     #generate datasets by using a wrapper class
+    
+    #TODO currently the images in the datasets are of dimensions (batch_size x (3x512x512)) whereas in the paper
+    #it's mentioned as (batch_size x (512x512x3)), check for correctness
     Ctr_dataset = Dataset(get_Ctr() ,transform=transformations)
     Ctr_loader = DataLoader(Ctr_dataset, batch_size = batch_size, shuffle = True, num_workers = 4)
 
@@ -60,6 +58,9 @@ def trainNet(net, batch_size, n_epochs, learning_rate):
             #data represents a single mini-batch
             #Get inputs
             inputs, labels = data
+            #print ("THE SIZE OF INPUTS IS ", inputs.size())
+            labels = labels.squeeze()
+            #print ("labels are ", labels)
 
             #Wrap them in a Variable object
             inputs, labels = Variable(inputs), Variable(labels)
@@ -69,15 +70,15 @@ def trainNet(net, batch_size, n_epochs, learning_rate):
             
             #Forward pass, backward pass, optimize for phase 1
             outputs = net.forward(inputs)
-            print ("size of outputs after forward propagation is", outputs.size())
-            print ("size of labels is ", labels.size())
+            #print ("size of outputs after forward propagation is", outputs.size())
+            #print ("size of labels is ", labels.size())
             loss_size = loss(outputs, labels)
             loss_size.backward()
             optimizer.step()
             
             #Print statistics
-            running_loss += loss_size.data[0]
-            total_train_loss += loss_size.data[0]
+            running_loss += loss_size.item()
+            total_train_loss += loss_size.item()
             
             #Print every 10th batch of an epoch
             if (i + 1) % (print_every + 1) == 0:
@@ -91,12 +92,13 @@ def trainNet(net, batch_size, n_epochs, learning_rate):
         total_val_loss = 0
         for inputs, labels in Cval_loader:
             #Wrap tensors in Variables
+            labels = labels.squeeze()
             inputs, labels = Variable(inputs), Variable(labels)
             
             #Forward pass
             val_outputs = net(inputs)
             val_loss_size = loss(val_outputs, labels)
-            total_val_loss += val_loss_size.data[0]
+            total_val_loss += val_loss_size.item()
             
         print("Validation loss = {:.2f}".format(total_val_loss / len(Cval_loader)))
         
@@ -112,7 +114,11 @@ def extractMoments(net):
     transformations = transforms.Compose([transforms.ToTensor()])
     
     #generate datasets by using a wrapper class
+
+    #TODO currently the images in the datasets are of dimensions (batch_size x (3x1000x1000)) whereas in the paper
+    #it's mentioned as (batch_size x (1000x1000x3)), check for correctness
     Mtr_dataset = Dataset(get_Mtr() ,transform=transformations)
+    #print ("THe size of Mtr dataset is ", len(Mtr_dataset))
     Mtr_loader = DataLoader(Mtr_dataset, batch_size = len(Mtr_dataset), shuffle = False, num_workers = 4)
 
     Mval_dataset = Dataset(get_Mval() ,transform=transformations)
@@ -125,7 +131,7 @@ def extractMoments(net):
     M_val_final_results = []
     M_test_final_results = []
     set_to_pass = []
-
+    attempts = 0
     for i in range(3):
         output = []
         if (i==0):
@@ -140,10 +146,16 @@ def extractMoments(net):
         for i,(a,b) in enumerate(set_to_pass, 0):
             inputs = a
             labels = b
-
+        labels = labels.squeeze()    
+        #print ("the size of inputs is ", inputs.size())
+        #print ("The size of labels is ", labels.size())
         for im in inputs:
+            attempts+=1
+            print("Attempt number ", attempts)
             #Wrap them in a Variable object
+            im = im.unsqueeze(0)
             img = Variable(im)
+            #print ("Dimensions of img are ", img.size())
             #Forward pass to extract moments for phase 2(this will be done one image at a time)
             single_moment = net.forward(img, phase = 1)
             output.append(single_moment)
@@ -154,9 +166,11 @@ def extractMoments(net):
             M_val_final_results = (torch.tensor(output), labels)
         else:
             M_test_final_results = (torch.tensor(output), labels)
-
+    print ("-----------------FINISHED EXTRACTING MOMENTS--------------------------")
     return (M_tr_final_results, M_val_final_results, M_test_final_results)
 
+
+#TODO resolve issues related to loss and labels here also
 def train_MLP_net(net, batch_size, n_epochs, learning_rate, M_tr, M_val, M_test):
     """train the MLP with extracted moments in phase 2
     x:(Nx4096) matrix where N->number of images of random size
@@ -238,6 +252,7 @@ def train_MLP_net(net, batch_size, n_epochs, learning_rate, M_tr, M_val, M_test)
 
 #MAIN
 #Get training data from the data_loader class
+#TODO change batch_size and learning rate for testing purposes
 batch_size_phase_1 = 3
 learning_rate_phase_1 = 0.01
 
@@ -247,6 +262,7 @@ learning_rate_phase_1 = 0.01
 
 #PHASE 1
 net_phase_1 = Net()
+#TODO change n_epochs to larger value later on
 trainNet(net_phase_1, batch_size=batch_size_phase_1, n_epochs=5, learning_rate=learning_rate_phase_1)
 
 #PHASE 2
