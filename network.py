@@ -9,7 +9,7 @@ from custom_pooling import *
 class Net(nn.Module):
     def __init__(self):
         super(Net, self).__init__()
-        self.numberOfPoolingMethods = 3
+        self.numberOfPoolingMethods = 4
         self.conv1 = nn.Conv2d(3, 8, 3, padding=1) #in_channels,out_channels,kernel_size respectively
         self.conv2 = nn.Conv2d(8, 16, 3, padding=1)
         self.conv3 = nn.Conv2d(16, 32, 3, padding=1)
@@ -67,25 +67,39 @@ class Net(nn.Module):
         
         #total number of pooling methods must be 'numberOfPoolingMethods'
         a = self.avgPoolLastlayer(x).view(-1, 1024)
+        #testing
+        #print ("The shape after average pooling is ", a.size())
         b = self.maxPoolLastLayer(x).view(-1, 1024)
+        #print ("The shape after max pooling is ", b.size())
+        
         dim_previous_layer = x.size(2)
+        #print ("The dimension of previous layer is ", x.size())
         min_pool_2D = AdaptiveMinPool2D(dim_previous_layer)
         variance_pool_2D = AdaptiveVariancePool2D(dim_previous_layer)
         c = min_pool_2D.forward(x).view(-1, 1024)
+        #print ("The shape after min pooling is ", c.size())
         d = variance_pool_2D.forward(x).view(-1, 1024)
-
+        #print ("The shape after variance pooling is ", d.size())
         x = torch.cat((a,b,c,d), dim = 1).view(-1, 4096)
-        print (x.size()) #should be (Nx4096) for 4096 features in each image
+        print ("The size of x after all poolings and concatenation is ", x.size()) #should be (Nx4096) for 4096 features in each image
         
         #just return the extracted moments of a batch in case of phase 2(val of phase=1)
         if (phase == 1):
             return x
-        x = self.dropoutLastLayer()
+        x = self.dropoutLastLayer(x)
+
+        print ("The size of x after dropout is ",x.size())
         
         #TODO check whether we need a ReLU here or not
         x = F.relu(self.fc1(x))
         x = self.fc2(x)
-        x = self.Softmax(x)
+        print ("dimension of x before softmax is ", x.size())
+        print ("x before softmax is ", x)
+
+        #TODO check the dimension used in softmax below input is of shape (batch_size, num_classes) : num_classes = 5
+        x = F.softmax(x, dim = 1)
+        print ("dimension of x after softmax is ", x.size())
+        print ("x after softmax is ", x)
         
         return x
 

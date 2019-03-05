@@ -21,6 +21,8 @@ LABEL = {
 
 def get_Ctr():
     C_tr = read_images(os.path.join(DATASET_PATH, 'train/ctr')) #(512x512) images
+    # print ("C_tr is ", C_tr)
+    # print ("size of C_tr is ", len(C_tr[0]))
     return C_tr
 
 def get_Mtr():

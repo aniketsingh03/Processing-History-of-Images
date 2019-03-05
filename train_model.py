@@ -3,10 +3,16 @@ import torch.nn as nn
 from PIL import Image
 import matplotlib.image as mpimg
 import matplotlib.pyplot as plt
+from torch.autograd import Variable
 from data_loader import *
 from network import *
 import numpy as np
 import time
+
+def myCrossEntropyLoss(outputs, labels):
+  batch_size = outputs.size()[0]
+  outputs = outputs[range(batch_size), labels] # pick the values corresponding to the labels
+  return -torch.sum(outputs)/num_examples
 
 def createLossAndOptimizer(net, learning_rate=0.001):
     """create loss and optimizer for the CNN
@@ -63,6 +69,8 @@ def trainNet(net, batch_size, n_epochs, learning_rate):
             
             #Forward pass, backward pass, optimize for phase 1
             outputs = net.forward(inputs)
+            print ("size of outputs after forward propagation is", outputs.size())
+            print ("size of labels is ", labels.size())
             loss_size = loss(outputs, labels)
             loss_size.backward()
             optimizer.step()
@@ -230,7 +238,7 @@ def train_MLP_net(net, batch_size, n_epochs, learning_rate, M_tr, M_val, M_test)
 
 #MAIN
 #Get training data from the data_loader class
-batch_size_phase_1 = 40
+batch_size_phase_1 = 3
 learning_rate_phase_1 = 0.01
 
 #each of M's and C's are a tuple of list of image and labels ie ([list_of_images], [list_of_labels])
