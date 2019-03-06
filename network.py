@@ -119,8 +119,11 @@ class MLPNet(nn.Module):
        #TODO: check whether ReLU is needed here or not
        x = F.relu(self.fc1(x))
        x = self.fc2(x)
-       x = self.Softmax(x)
+
+       #print ("dimension of x before softmax is ", x.size())
+       #TODO check the dimension used in softmax below input is of shape (batch_size, num_classes) : num_classes = 5
+       x = F.softmax(x, dim = 1)
        
-       print(x.size())
+       #print("dimension of x after softmax is ", x.size())
        #x consists of the class probabilities for a batch
        return x
