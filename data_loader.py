@@ -96,11 +96,11 @@ class Dataset(Dataset):
 
     def __getitem__(self, index):
         img = Image.open(self.image_paths[index])
-        img.convert('RGB')
-        if self.transform is not None:
+        img = img.convert('RGB')
+        if self.transform is not None:    
             img = self.transform(img)
         label = torch.from_numpy(np.asarray(self.image_labels[index]).reshape([1,1]))
-
+        #print (img)
         return img, label
 
     def __len__(self):

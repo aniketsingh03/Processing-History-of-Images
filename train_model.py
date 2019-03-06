@@ -8,6 +8,7 @@ from data_loader import *
 from network import *
 import numpy as np
 import time
+import torchvision
 
 def createLossAndOptimizer(net, learning_rate=0.001):
     """create loss and optimizer for the CNN
@@ -25,7 +26,7 @@ def trainNet(net, batch_size, n_epochs, learning_rate):
     print("learning_rate=", learning_rate)
     print("=" * 30)
 
-    transformations = transforms.Compose([transforms.RandomRotation(90),transforms.ToTensor()])
+    transformations = torchvision.transforms.Compose([torchvision.transforms.RandomRotation((90,90)), torchvision.transforms.ToTensor()])
     
     #generate datasets by using a wrapper class
     
@@ -58,6 +59,7 @@ def trainNet(net, batch_size, n_epochs, learning_rate):
             #data represents a single mini-batch
             #Get inputs
             inputs, labels = data
+            #print (inputs)
             #print ("THE SIZE OF INPUTS IS ", inputs.size())
             labels = labels.squeeze()
             #print ("labels are ", labels)
@@ -104,28 +106,30 @@ def trainNet(net, batch_size, n_epochs, learning_rate):
         
     print("Training for phase 1 finished, took {:.2f}s".format(time.time() - training_start_time))
 
+def obtainDataAsTensors(im_path, im_label):
+    """obtain images and labels in the form of torch tensors for phase 2 manipulation
+    """
+    transformations = torchvision.transforms.Compose([torchvision.transforms.ToTensor()])
+    img = Image.open(im_path)
+    img = img.convert('RGB')
+    img = transformations(img)
+
+    label = torch.from_numpy(np.asarray(im_label).reshape([1,1]))
+
+    return (img, label)
+
 def extractMoments(net):
     """
     Extracting moments by using the network trained in phase 1
     and the inputs as M_tr(Phase 2). 4096 moments are extracted
     for each image.
     """
-    #for training set
-    transformations = transforms.Compose([transforms.ToTensor()])
-    
-    #generate datasets by using a wrapper class
 
     #TODO currently the images in the datasets are of dimensions (batch_size x (3x1000x1000)) whereas in the paper
     #it's mentioned as (batch_size x (1000x1000x3)), check for correctness
-    Mtr_dataset = Dataset(get_Mtr() ,transform=transformations)
-    #print ("THe size of Mtr dataset is ", len(Mtr_dataset))
-    Mtr_loader = DataLoader(Mtr_dataset, batch_size = len(Mtr_dataset), shuffle = False, num_workers = 4)
-
-    Mval_dataset = Dataset(get_Mval() ,transform=transformations)
-    Mval_loader = DataLoader(Mval_dataset, batch_size = len(Mval_dataset), shuffle = False, num_workers = 4)
-
-    Mtest_dataset = Dataset(get_Mtest() ,transform=transformations)
-    Mtest_loader = DataLoader(Mtest_dataset, batch_size = len(Mtest_dataset), shuffle = False, num_workers = 4)
+    Mtr_dataset = get_Mtr()
+    Mval_dataset = get_Mval()
+    Mtest_dataset = get_Mtest()
 
     M_tr_final_results = [] 
     M_val_final_results = []
@@ -133,39 +137,42 @@ def extractMoments(net):
     set_to_pass = []
     attempts = 0
     for i in range(3):
-        output = []
+        output_image = []
+        output_labels = []
         if (i==0):
-            set_to_pass = Mtr_loader
+            set_to_pass = Mtr_dataset
         elif (i==1):
-            set_to_pass = Mval_loader
+            set_to_pass = Mval_dataset
         else:
-            set_to_pass = Mtest_loader
-        
-        inputs = []
-        labels = []
-        for i,(a,b) in enumerate(set_to_pass, 0):
-            inputs = a
-            labels = b
-        labels = labels.squeeze()    
-        #print ("the size of inputs is ", inputs.size())
-        #print ("The size of labels is ", labels.size())
-        for im in inputs:
+            set_to_pass = Mtest_dataset
+        print ("SET TO PASS: ", set_to_pass)
+        image_paths = set_to_pass[0]
+        print ("IMAGE PATHS SIZE: ", len(image_paths))
+        image_labels = set_to_pass[1]
+        print ("IMAGE LABELS SIZE: ", len(image_labels))
+
+        for i in range(len(image_labels)):
             attempts+=1
             print("Attempt number ", attempts)
+            
+            image, label = obtainDataAsTensors(image_paths[i], image_labels[i])
+            image = image.unsqueeze(0)
+            print ("size of image is ", image.size())
             #Wrap them in a Variable object
-            im = im.unsqueeze(0)
-            img = Variable(im)
-            #print ("Dimensions of img are ", img.size())
+            img = Variable(image)
+            
             #Forward pass to extract moments for phase 2(this will be done one image at a time)
             single_moment = net.forward(img, phase = 1)
-            output.append(single_moment)
+            output_image.append(single_moment)
+            output_labels.append(label)
 
         if (i==0):
-            M_tr_final_results = (torch.tensor(output), labels)
+            M_tr_final_results = (torch.tensor(output_image), torch.tensor(output_labels))
         elif (i==1):
-            M_val_final_results = (torch.tensor(output), labels)
+            M_val_final_results = (torch.tensor(output_image), torch.tensor(output_labels))
         else:
-            M_test_final_results = (torch.tensor(output), labels)
+            M_test_final_results = (torch.tensor(output_image), torch.tensor(output_labels))
+
     print ("-----------------FINISHED EXTRACTING MOMENTS--------------------------")
     return (M_tr_final_results, M_val_final_results, M_test_final_results)
 
@@ -263,13 +270,14 @@ learning_rate_phase_1 = 0.01
 #PHASE 1
 net_phase_1 = Net()
 #TODO change n_epochs to larger value later on
-trainNet(net_phase_1, batch_size=batch_size_phase_1, n_epochs=5, learning_rate=learning_rate_phase_1)
+trainNet(net_phase_1, batch_size=batch_size_phase_1, n_epochs=3, learning_rate=learning_rate_phase_1)
 
 #PHASE 2
 #each of the extracted moments are a tuple of (moments, labels)
 extracted_moments_Mtr, extracted_moments_Mval, extracted_moments_Mtest  = extractMoments(net_phase_1)
 
 #PHASE 3
+#TODO change batch_size and learning rate for testing purposes
 batch_size_phase_3 = 1000
 learning_rate_phase_3 = 0.01
 net_phase_2 = MLPNet()
