@@ -118,7 +118,7 @@ def obtainDataAsTensors(im_path, im_label):
 
     return (img, label)
 
-def extractMoments(net):
+def extractTrainMoments(net):
     """
     Extracting moments by using the network trained in phase 1
     and the inputs as M_tr(Phase 2). 4096 moments are extracted
@@ -128,53 +128,105 @@ def extractMoments(net):
     #TODO currently the images in the datasets are of dimensions (batch_size x (3x1000x1000)) whereas in the paper
     #it's mentioned as (batch_size x (1000x1000x3)), check for correctness
     Mtr_dataset = get_Mtr()
-    Mval_dataset = get_Mval()
-    Mtest_dataset = get_Mtest()
-
-    M_tr_final_results = [] 
-    M_val_final_results = []
-    M_test_final_results = []
-    set_to_pass = []
+    output_image = []
+    output_labels = []
     attempts = 0
-    for i in range(3):
-        output_image = []
-        output_labels = []
-        if (i==0):
-            set_to_pass = Mtr_dataset
-        elif (i==1):
-            set_to_pass = Mval_dataset
-        else:
-            set_to_pass = Mtest_dataset
-        print ("SET TO PASS: ", set_to_pass)
-        image_paths = set_to_pass[0]
-        print ("IMAGE PATHS SIZE: ", len(image_paths))
-        image_labels = set_to_pass[1]
-        print ("IMAGE LABELS SIZE: ", len(image_labels))
+    #print ("SET TO PASS: ", Mtr_dataset)
+    image_paths = Mtr_dataset[0]
+    #print ("IMAGE PATHS SIZE: ", len(image_paths))
+    image_labels = Mtr_dataset[1]
+    #print ("IMAGE LABELS SIZE: ", len(image_labels))
 
-        for i in range(len(image_labels)):
-            attempts+=1
-            print("Attempt number ", attempts)
-            
-            image, label = obtainDataAsTensors(image_paths[i], image_labels[i])
-            image = image.unsqueeze(0)
-            print ("size of image is ", image.size())
-            #Wrap them in a Variable object
-            img = Variable(image)
-            
-            #Forward pass to extract moments for phase 2(this will be done one image at a time)
-            single_moment = net.forward(img, phase = 1)
-            output_image.append(single_moment)
-            output_labels.append(label)
+    for i in range(len(image_labels)):
+        attempts+=1
+        print("Attempt number ", attempts)
+        
+        image, label = obtainDataAsTensors(image_paths[i], image_labels[i])
+        image = image.unsqueeze(0)
+        #print ("size of image is ", image.size())
+        #Wrap them in a Variable object
+        img = Variable(image)
+        
+        #Forward pass to extract moments for phase 2(this will be done one image at a time)
+        single_moment = net.forward(img, phase = 1)
+        output_image.append(single_moment)
+        output_labels.append(label)
+    
+    print ("-----------------FINISHED EXTRACTING MOMENTS FOR TRAIN SET--------------------------")
+    return (torch.tensor(output_image), torch.tensor(output_labels))
 
-        if (i==0):
-            M_tr_final_results = (torch.tensor(output_image), torch.tensor(output_labels))
-        elif (i==1):
-            M_val_final_results = (torch.tensor(output_image), torch.tensor(output_labels))
-        else:
-            M_test_final_results = (torch.tensor(output_image), torch.tensor(output_labels))
+def extractValMoments(net):
+    """
+    Extracting moments by using the network trained in phase 1
+    and the inputs as M_val(Phase 2). 4096 moments are extracted
+    for each image.
+    """
 
-    print ("-----------------FINISHED EXTRACTING MOMENTS--------------------------")
-    return (M_tr_final_results, M_val_final_results, M_test_final_results)
+    #TODO currently the images in the datasets are of dimensions (batch_size x (3x1000x1000)) whereas in the paper
+    #it's mentioned as (batch_size x (1000x1000x3)), check for correctness
+    Mval_dataset = get_Mval()
+    output_image = []
+    output_labels = []
+    attempts = 0
+    #print ("SET TO PASS: ", Mval_dataset)
+    image_paths = Mval_dataset[0]
+    #print ("IMAGE PATHS SIZE: ", len(image_paths))
+    image_labels = Mval_dataset[1]
+    #print ("IMAGE LABELS SIZE: ", len(image_labels))
+
+    for i in range(len(image_labels)):
+        attempts+=1
+        print("Attempt number ", attempts)
+        
+        image, label = obtainDataAsTensors(image_paths[i], image_labels[i])
+        image = image.unsqueeze(0)
+        #print ("size of image is ", image.size())
+        #Wrap them in a Variable object
+        img = Variable(image)
+        
+        #Forward pass to extract moments for phase 2(this will be done one image at a time)
+        single_moment = net.forward(img, phase = 1)
+        output_image.append(single_moment)
+        output_labels.append(label)
+
+    print ("-----------------FINISHED EXTRACTING MOMENTS FOR VALIDATION SET--------------------------")
+    return (torch.tensor(output_image), torch.tensor(output_labels))        
+
+def extractTestMoments(net):
+    """
+    Extracting moments by using the network trained in phase 1
+    and the inputs as M_test(Phase 2). 4096 moments are extracted
+    for each image.
+    """
+
+    #TODO currently the images in the datasets are of dimensions (batch_size x (3x1000x1000)) whereas in the paper
+    #it's mentioned as (batch_size x (1000x1000x3)), check for correctness
+    Mtest_dataset = get_Mtest()
+    attempts = 0
+    output_image = []
+    output_labels = []
+    #print ("SET TO PASS: ", Mtest_dataset)
+    image_paths = Mtest_dataset[0]
+    #print ("IMAGE PATHS SIZE: ", len(image_paths))
+    image_labels = Mtest_dataset[1]
+    #print ("IMAGE LABELS SIZE: ", len(image_labels))
+    for i in range(len(image_labels)):
+        attempts+=1
+        print("Attempt number ", attempts)
+        
+        image, label = obtainDataAsTensors(image_paths[i], image_labels[i])
+        image = image.unsqueeze(0)
+        #print ("size of image is ", image.size())
+        #Wrap them in a Variable object
+        img = Variable(image)
+        
+        #Forward pass to extract moments for phase 2(this will be done one image at a time)
+        single_moment = net.forward(img, phase = 1)
+        output_image.append(single_moment)
+        output_labels.append(label)
+
+    print ("-----------------FINISHED EXTRACTING MOMENTS FOR TEST SET--------------------------")
+    return (torch.tensor(output_image), torch.tensor(output_labels))
 
 
 #TODO resolve issues related to loss and labels here also
@@ -274,7 +326,9 @@ trainNet(net_phase_1, batch_size=batch_size_phase_1, n_epochs=3, learning_rate=l
 
 #PHASE 2
 #each of the extracted moments are a tuple of (moments, labels)
-extracted_moments_Mtr, extracted_moments_Mval, extracted_moments_Mtest  = extractMoments(net_phase_1)
+extracted_moments_Mtr = extractTrainMoments(net_phase_1)
+extracted_moments_Mval = extractValMoments(net_phase_1)
+extracted_moments_Mtest  = extractTestMoments(net_phase_1)
 
 #PHASE 3
 #TODO change batch_size and learning rate for testing purposes
