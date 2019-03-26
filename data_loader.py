@@ -10,6 +10,7 @@ from PIL import Image
 
 # Dataset Parameters
 DATASET_PATH = 'dataset/jpegs'
+QF = '95'
 
 LABEL = {
     'org' : 0,
@@ -20,27 +21,27 @@ LABEL = {
 }
 
 def get_Ctr():
-    C_tr = read_images(os.path.join(DATASET_PATH, 'train/ctr'), shuffle=True) #(512x512) images
+    C_tr = read_images(os.path.join(DATASET_PATH, 'train/'+QF+'/ctr'), shuffle=True) #(512x512) images
     return C_tr
 
 def get_Mtr():
-    M_tr = read_images(os.path.join(DATASET_PATH, 'train/mtr')) #arbitrarily sized images
+    M_tr = read_images(os.path.join(DATASET_PATH, 'train/'+QF+'/mtr')) #arbitrarily sized images
     return M_tr
 
 def get_Cval():
-    C_val = read_images(os.path.join(DATASET_PATH, 'val/ctr'), shuffle=True) #(512x512) images
+    C_val = read_images(os.path.join(DATASET_PATH, 'val/'+QF+'/ctr'), shuffle=True) #(512x512) images
     return C_val
 
 def get_Mval():
-    M_val = read_images(os.path.join(DATASET_PATH, 'val/mtr')) #arbitrarily sized images
+    M_val = read_images(os.path.join(DATASET_PATH, 'val/'+QF+'/mtr')) #arbitrarily sized images
     return M_val
 
 def get_Ctest():
-    C_test = read_images(os.path.join(DATASET_PATH, 'test/ctr'), shuffle=True) #(512x512) images
+    C_test = read_images(os.path.join(DATASET_PATH, 'test/'+QF+'/ctr'), shuffle=True) #(512x512) images
     return C_test
 
 def get_Mtest():
-    M_test = read_images(os.path.join(DATASET_PATH, 'test/mtr')) #arbitrarily sized images
+    M_test = read_images(os.path.join(DATASET_PATH, 'test/'+QF+'/mtr')) #arbitrarily sized images
     return M_test
 
 def read_images(dataset_path, batch_size=None, shuffle=False):
@@ -84,11 +85,11 @@ def read_images(dataset_path, batch_size=None, shuffle=False):
     return data
 
 class Dataset(Dataset):
-    """a class to let torch manage the entire dataset for training the CNN in phase 1  
+    """a class to let torch manage the entire dataset for training the CNN in phase 1
     Arguments:
         image_data : collection of strings representing the image paths and labels tuples
         transform : the transform to be applied to the images
-    """    
+    """
     def __init__(self, image_data, transform = None):
         self.image_paths, self.image_labels = image_data
         self.transform = transform
@@ -96,7 +97,7 @@ class Dataset(Dataset):
     def __getitem__(self, index):
         img = Image.open(self.image_paths[index])
         img = img.convert('RGB')
-        if self.transform is not None:    
+        if self.transform is not None:
             img = self.transform(img)
         label = torch.from_numpy(np.asarray(self.image_labels[index]).reshape([1,1]))
         #print (img)
@@ -106,11 +107,11 @@ class Dataset(Dataset):
         return len(self.image_paths)
 
 class MLPDataset(Dataset):
-    """a class to let torch manage the entire dataset for training MLP in phase 3  
+    """a class to let torch manage the entire dataset for training MLP in phase 3
     Arguments:
         moments : a tuple of (mom, labels) where:
             mom -> tensor of (Nx4096) consisting of moments of all images
-            labels -> tensor of (Nx1) listing label of each corresponding image 
+            labels -> tensor of (Nx1) listing label of each corresponding image
     """
     def __init__(self, moments):
         self.mom, self.labels = moments
@@ -143,7 +144,7 @@ class MLPDataset(Dataset):
 #     print ('data is ', data)
 #     #print ('label is ', label)
 #     print ("="*30)
-# print('All LABELS are ', labels)    
+# print('All LABELS are ', labels)
 
 # a = torch.randn(10,4096)
 # b = labels
