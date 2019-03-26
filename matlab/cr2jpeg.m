@@ -15,9 +15,9 @@ for j = 1:numfolder
     numfiles = length(files);
     train = floor(numfiles*0.6);
     val = floor(numfiles*0.2);
-    
+    randk = randperm(numfiles);
     for k = 1:numfiles
-        filepath = fullfile(files(k).folder, files(k).name);
+        filepath = fullfile(files(randk(k)).folder, files(randk(k)).name);
         [path,name,ext] = fileparts(filepath);
         im = imread(filepath);
         q = unifrnd(85, 99);
