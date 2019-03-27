@@ -9,6 +9,7 @@ from network import *
 import numpy as np
 import time
 import torchvision
+import torch
 
 def createLossAndOptimizer(net, learning_rate=0.001):
     """create loss and optimizer for the CNN
@@ -68,7 +69,7 @@ def trainNet(net, batch_size, n_epochs, learning_rate):
             #print ("THE SIZE OF LABELS IS ", labels.size())
             
             #Wrap them in a Variable object
-            inputs, labels = Variable(inputs), Variable(labels)
+            inputs, labels = Variable(inputs.to(device)), Variable(labels.to(device))
             
             #Set the parameter gradients to zero
             optimizer.zero_grad()
@@ -100,7 +101,7 @@ def trainNet(net, batch_size, n_epochs, learning_rate):
             labels = labels.flatten()
             #print ("-------------------INPUTS SIZE-----------------", inputs.size())
             #print ("-------------------LABELS SIZE-----------------", labels.size())
-            inputs, labels = Variable(inputs), Variable(labels)
+            inputs, labels = Variable(inputs.to(device)), Variable(labels.to(device))
             
             #Forward pass
             val_outputs = net(inputs)
@@ -118,7 +119,7 @@ def trainNet(net, batch_size, n_epochs, learning_rate):
     with torch.no_grad():
         for inputs, labels in Ctest_loader:
             labels = labels.flatten()
-            inputs, labels = Variable(inputs), Variable(labels)
+            inputs, labels = Variable(inputs.to(device)), Variable(labels.to(device))
             outputs = net(inputs)
             #print ("------------------TESTING OUTPUTS------------------", outputs.size())
 
@@ -173,7 +174,7 @@ def extractTrainMoments(net):
         #print ("size of image is ", image.size())
         
         #Wrap them in a Variable object
-        img = Variable(image)
+        img = Variable(image.to(device))
         
         #Forward pass to extract moments for phase 2(this will be done one image at a time)
         single_moment = net.forward(img, phase = 1)
@@ -220,7 +221,7 @@ def extractValMoments(net):
         image = image.unsqueeze(0)
         #print ("size of image is ", image.size())
         #Wrap them in a Variable object
-        img = Variable(image)
+        img = Variable(image.to(device))
         
         #Forward pass to extract moments for phase 2(this will be done one image at a time)
         single_moment = net.forward(img, phase = 1)
@@ -267,7 +268,7 @@ def extractTestMoments(net):
         image = image.unsqueeze(0)
         #print ("size of image is ", image.size())
         #Wrap them in a Variable object
-        img = Variable(image)
+        img = Variable(image.to(device))
         
         #Forward pass to extract moments for phase 2(this will be done one image at a time)
         single_moment = net.forward(img, phase = 1)
@@ -335,7 +336,7 @@ def train_MLP_net(net, batch_size, n_epochs, learning_rate, M_tr, M_val, M_test)
             labels = labels.flatten()
 
             #Wrap them in a Variable object
-            inputs, labels = Variable(inputs), Variable(labels)
+            inputs, labels = Variable(inputs.to(device)), Variable(labels.to(device))
             
             #Set the parameter gradients to zero
             optimizer.zero_grad()
@@ -367,7 +368,7 @@ def train_MLP_net(net, batch_size, n_epochs, learning_rate, M_tr, M_val, M_test)
             #print ("-------------------INPUTS SIZE-----------------", inputs.size())
             #print ("-------------------LABELS SIZE-----------------", labels.size())
             #Wrap tensors in Variables
-            inputs, labels = Variable(inputs), Variable(labels)
+            inputs, labels = Variable(inputs.to(device)), Variable(labels.to(device))
             
             #Forward pass
             val_outputs = net(inputs)
@@ -383,7 +384,7 @@ def train_MLP_net(net, batch_size, n_epochs, learning_rate, M_tr, M_val, M_test)
     with torch.no_grad():
         for inputs, labels in test_loader:
             labels = labels.flatten()
-            inputs, labels = Variable(inputs), Variable(labels)
+            inputs, labels = Variable(inputs.to(device)), Variable(labels.to(device))
             outputs = net(inputs)
             #print ("------------------TESTING OUTPUTS------------------", outputs.size())
 
@@ -400,7 +401,9 @@ def train_MLP_net(net, batch_size, n_epochs, learning_rate, M_tr, M_val, M_test)
 #MAIN
 #Get training data from the data_loader class
 #TODO change batch_size and learning rate for testing purposes
-batch_size_phase_1 = 1
+device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+print (device)
+batch_size_phase_1 = 9
 learning_rate_phase_1 = 0.01
 
 #each of M's and C's are a tuple of list of image and labels ie ([list_of_images], [list_of_labels])
@@ -409,6 +412,7 @@ learning_rate_phase_1 = 0.01
 
 #PHASE 1
 net_phase_1 = Net()
+net_phase_1.to(device)
 #TODO change n_epochs to larger value later on
 trainNet(net_phase_1, batch_size=batch_size_phase_1, n_epochs=3, learning_rate=learning_rate_phase_1)
 
@@ -420,8 +424,9 @@ extracted_moments_Mtest  = extractTestMoments(net_phase_1)
 
 #PHASE 3
 #TODO change batch_size and learning rate for testing purposes
-batch_size_phase_3 = 3
+batch_size_phase_3 = 5
 learning_rate_phase_3 = 0.01
 net_phase_2 = MLPNet()
+net_phase_2.to(device)
 train_MLP_net(net_phase_2, batch_size=batch_size_phase_3, n_epochs=3, learning_rate=learning_rate_phase_3, 
 M_tr=extracted_moments_Mtr,M_val=extracted_moments_Mval,M_test=extracted_moments_Mtest)

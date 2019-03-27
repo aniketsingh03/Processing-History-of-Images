@@ -172,6 +172,7 @@ for k = 1:numfiles
   imwrite(xc2, ctrpath, 'Quality',qFactor);
   mtrpath = fullfile(writemtr, sprintf('%s.jpeg', name));
   imwrite(x11, mtrpath, 'Quality',qFactor);
+  fprintf('%d of %d done\n', k, numfiles);
 end
 
 trainval = ["val" "test"];
@@ -306,6 +307,7 @@ for i = trainval
         imwrite(xc2, ctrpath, 'Quality',qFactor);
         mtrpath = fullfile(writemtr, sprintf('%s.jpeg', name));
         imwrite(x11, mtrpath, 'Quality',qFactor);
+        fprintf('%d of %d done\n', k, numfiles);
     end
 end
 
