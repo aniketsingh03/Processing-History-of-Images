@@ -104,3 +104,7 @@ venv.bak/
 
 # mypy
 .mypy_cache/
+
+#model checkpoints
+checkpoints.pth
+test_file

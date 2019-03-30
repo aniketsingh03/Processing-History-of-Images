@@ -20,9 +20,7 @@ LABEL = {
 }
 
 def get_Ctr():
-    C_tr = read_images(os.path.join(DATASET_PATH, 'train/ctr')) #(512x512) images
-    # print ("C_tr is ", C_tr)
-    # print ("size of C_tr is ", len(C_tr[0]))
+    C_tr = read_images(os.path.join(DATASET_PATH, 'train/ctr', True)) #(512x512) images
     return C_tr
 
 def get_Mtr():
@@ -30,7 +28,7 @@ def get_Mtr():
     return M_tr
 
 def get_Cval():
-    C_val = read_images(os.path.join(DATASET_PATH, 'val/ctr')) #(512x512) images
+    C_val = read_images(os.path.join(DATASET_PATH, 'val/ctr', True)) #(512x512) images
     return C_val
 
 def get_Mval():
@@ -38,14 +36,14 @@ def get_Mval():
     return M_val
 
 def get_Ctest():
-    C_test = read_images(os.path.join(DATASET_PATH, 'test/ctr')) #(512x512) images
+    C_test = read_images(os.path.join(DATASET_PATH, 'test/ctr', True)) #(512x512) images
     return C_test
 
 def get_Mtest():
     M_test = read_images(os.path.join(DATASET_PATH, 'test/mtr')) #arbitrarily sized images
     return M_test
 
-def read_images(dataset_path, batch_size=None):
+def read_images(dataset_path, batch_size=None, shuffle=False):
     """
     Load Images stored in class-wise folders and return batchwise lists
     """
@@ -66,7 +64,8 @@ def read_images(dataset_path, batch_size=None):
 
     # Shuffle image dataset
     c = list(zip(imagepaths, labels))
-    random.shuffle(c)
+    if shuffle:
+        random.shuffle(c)
     imagepaths, labels = zip(*c)
 
     data = [imagepaths, labels]
