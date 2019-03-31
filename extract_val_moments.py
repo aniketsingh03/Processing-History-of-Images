@@ -59,16 +59,16 @@ def extractTrainMoments(net):
 
 	#TODO currently the images in the datasets are of dimensions (batch_size x (3x1000x1000)) whereas in the paper
 	#it's mentioned as (batch_size x (1000x1000x3)), check for correctness
-	Mtr_dataset = get_Mtr()
-	print ("THE SIZE OF MTR DATASET IS ", sys.getsizeof(Mtr_dataset))
+	Mval_dataset = get_Mval()
+	print ("THE SIZE OF MTR DATASET IS ", sys.getsizeof(Mval_dataset))
 	output_image, output_labels, num_images_already_processed = loadSavedMoments(saved_moments_filename)
 	num_of_images_processed = num_images_already_processed
-	#print ("SET TO PASS: ", Mtr_dataset)
-	image_paths = Mtr_dataset[0]
+	#print ("SET TO PASS: ", Mval_dataset)
+	image_paths = Mval_dataset[0]
 	print ("THE NUMBER OF IMAGES FOR TRAINING ARE ", len(image_paths))
 	print ("THE SIZE OF IMAGE PATHS IS ", sys.getsizeof(image_paths))
 	#print ("IMAGE PATHS SIZE: ", len(image_paths))
-	image_labels = Mtr_dataset[1]
+	image_labels = Mval_dataset[1]
 	print ("THE SIZE OF IMAGE LABELS IS ", sys.getsizeof(image_labels))
 	#print ("IMAGE LABELS SIZE: ", len(image_labels))
 
@@ -92,15 +92,15 @@ def extractTrainMoments(net):
 
 			if (num_of_images_processed%200==0):
 				storeMoments(saved_moments_filename, (output_image, output_labels, num_of_images_processed))
-
 			torch.cuda.empty_cache()
+
 
 device = torch.device("cuda:2" if torch.cuda.is_available() else "cpu")
 print (device)
 
 #path to save each training epoch
 saved_model_filename = 'checkpoints.pth'
-saved_moments_filename = 'train_moments'
+saved_moments_filename = 'val_moments'
 
 net_phase_1 = Net()
 net_phase_1 = loadCheckpoints(net_phase_1, saved_model_filename)

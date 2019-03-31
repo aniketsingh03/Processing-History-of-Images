@@ -20,7 +20,7 @@ LABEL = {
 }
 
 def get_Ctr():
-    C_tr = read_images(os.path.join(DATASET_PATH, 'train/ctr', True)) #(512x512) images
+    C_tr = read_images(os.path.join(DATASET_PATH, 'train/ctr'), shuffle=True) #(512x512) images
     return C_tr
 
 def get_Mtr():
@@ -28,7 +28,7 @@ def get_Mtr():
     return M_tr
 
 def get_Cval():
-    C_val = read_images(os.path.join(DATASET_PATH, 'val/ctr', True)) #(512x512) images
+    C_val = read_images(os.path.join(DATASET_PATH, 'val/ctr'), shuffle=True) #(512x512) images
     return C_val
 
 def get_Mval():
@@ -36,7 +36,7 @@ def get_Mval():
     return M_val
 
 def get_Ctest():
-    C_test = read_images(os.path.join(DATASET_PATH, 'test/ctr', True)) #(512x512) images
+    C_test = read_images(os.path.join(DATASET_PATH, 'test/ctr'), shuffle=True) #(512x512) images
     return C_test
 
 def get_Mtest():

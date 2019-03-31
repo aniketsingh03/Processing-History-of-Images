@@ -9,15 +9,15 @@ def load_checkpoints(model, PATH):
         print("=> loading checkpoint '{}'".format(PATH))
         checkpoint = torch.load(PATH)
         model.load_state_dict(checkpoint['state_dict'])
-        print("=> loaded checkpoint '{}'"
-                  .format(PATH))
+        print("=> loaded checkpoint '{}' (epoch {})"
+                  .format(PATH, checkpoint['epoch']))
     else:
         print("=> no checkpoint found at '{}'".format(PATH))
 
     return model
 
 #TESTING
-device = torch.device("cuda:1" if torch.cuda.is_available() else "cpu")
+device = torch.device("cuda:2" if torch.cuda.is_available() else "cpu")
 print (device)
 
 #path to save each training epoch
@@ -27,9 +27,9 @@ net_phase_1 = Net()
 net_phase_1 = load_checkpoints(net_phase_1, PATH)
 #move model to cuda
 net_phase_1 = net_phase_1.to(device)
-net_phase_1.eval()
+#net_phase_1.eval()
 
-transformations = torchvision.transforms.Compose([torchvision.transforms.ToTensor()])
+transformations = torchvision.transforms.Compose([torchvision.transforms.ToTensor(),])
 batch_size = 40
 
 Ctest_dataset = Dataset(get_Ctest() ,transform=transformations)
@@ -44,7 +44,10 @@ with torch.no_grad():
         labels = lab.cuda(device)
 
         inputs, labels = Variable(inputs), Variable(labels)
+        #print ("INPUTS ARE ", inputs)
+        #print ("LABELS ARE ", labels)
         outputs = net_phase_1(inputs)
+        #print ("OUTPUTS ARE ", outputs)
         
         #print ("------------------TESTING OUTPUTS------------------", outputs.size())
         
@@ -55,8 +58,8 @@ with torch.no_grad():
         total += labels.size(0)
         correct += (predicted == labels).sum().item()
 
-print ("correct values ", correct)
-print ("total values ", total)
-print('Accuracy of the network in the first phase is : %d %%' % (
-    100 * correct / total))
-torch.cuda.empty_cache()
+    print ("correct values ", correct)
+    print ("total values ", total)
+    print('Accuracy of the network in the first phase is : %d %%' % (
+        100 * correct / total))
+    torch.cuda.empty_cache()
