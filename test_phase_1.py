@@ -9,19 +9,19 @@ def load_checkpoints(model, PATH):
         print("=> loading checkpoint '{}'".format(PATH))
         checkpoint = torch.load(PATH)
         model.load_state_dict(checkpoint['state_dict'])
-        print("=> loaded checkpoint '{}' (epoch {})"
-                  .format(PATH, checkpoint['epoch']))
+        print("=> loaded checkpoint '{}' (accuracy {})"
+                  .format(PATH, checkpoint['accuracy']))
     else:
         print("=> no checkpoint found at '{}'".format(PATH))
 
     return model
 
 #TESTING
-device = torch.device("cuda:2" if torch.cuda.is_available() else "cpu")
+device = torch.device("cuda:1" if torch.cuda.is_available() else "cpu")
 print (device)
 
-#path to save each training epoch
-PATH = 'checkpoints.pth'
+#path for the best model
+PATH = 'best_model_phase_1.pth'
 
 net_phase_1 = Net()
 net_phase_1 = load_checkpoints(net_phase_1, PATH)

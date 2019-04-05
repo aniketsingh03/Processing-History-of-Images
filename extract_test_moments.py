@@ -12,8 +12,8 @@ def loadCheckpoints(model, PATH):
 		print("=> loading checkpoint '{}'".format(PATH))
 		checkpoint = torch.load(PATH)
 		model.load_state_dict(checkpoint['state_dict'])
-		print("=> loaded checkpoint '{}' (epoch {})"
-				  .format(PATH, checkpoint['epoch']))
+		print("=> loaded checkpoint '{}' (accuracy {})"
+				  .format(PATH, checkpoint['accuracy']))
 	else:
 		print("=> no checkpoint found at '{}'".format(PATH))
 
@@ -50,7 +50,7 @@ def obtainDataAsTensors(im_path, im_label):
 
 	return (img, label)
 
-def extractTrainMoments(net):
+def extractTestMoments(net):
 	"""
 	Extracting moments by using the network trained in phase 1
 	and the inputs as M_tr(Phase 2). 4096 moments are extracted
@@ -77,15 +77,15 @@ def extractTrainMoments(net):
 		num_of_images_processed+=1
 		if (image.size(1)<2048 or image.size(2)<2048):
 			print("Image number ", num_of_images_processed)
-			print ("SIZE OF IMAGE: ", image.size())
+			#print ("SIZE OF IMAGE: ", image.size())
 			image = image.unsqueeze(0)
-			print ("SIZE OF IMAGE TENSOR ON MEMORY IS ", image.element_size() * image.nelement())        
+			#print ("SIZE OF IMAGE TENSOR ON MEMORY IS ", image.element_size() * image.nelement())        
 			#Wrap them in a Variable object
 			img = image.cuda(device)
 			img = Variable(img)
 			#Forward pass to extract moments for phase 2(this will be done one image at a time)
 			single_moment = net(img, phase = 1)
-			print ("SIZE OF OUTPUT FROM MODEL ON DISK IS ", single_moment.element_size() * single_moment.nelement())
+			#print ("SIZE OF OUTPUT FROM MODEL ON DISK IS ", single_moment.element_size() * single_moment.nelement())
 			#print ("-------------SIZE OF SINGLE MOMENT-----------", single_moment.size())
 			output_image.append(single_moment.data[0])
 			output_labels.append(label)
@@ -94,12 +94,12 @@ def extractTrainMoments(net):
 				storeMoments(saved_moments_filename, (output_image, output_labels, num_of_images_processed))
 			torch.cuda.empty_cache()
 
-device = torch.device("cuda:3" if torch.cuda.is_available() else "cpu")
+device = torch.device("cuda:1" if torch.cuda.is_available() else "cpu")
 print (device)
 
 #path to save each training epoch
 #CHANGE THIS PATH TO BEST MODEL'S PATH TO GET THE BEST MODEL
-saved_model_filename = 'checkpoints.pth'
+saved_model_filename = 'best_model_phase_1.pth'
 saved_moments_filename = 'test_moments'
 
 net_phase_1 = Net()
@@ -108,4 +108,4 @@ net_phase_1 = loadCheckpoints(net_phase_1, saved_model_filename)
 net_phase_1 = net_phase_1.to(device)
 #net_phase_1.eval()
 
-extractTrainMoments(net_phase_1)
+extractTestMoments(net_phase_1)

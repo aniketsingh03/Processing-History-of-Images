@@ -149,8 +149,15 @@ def trainNet(net, batch_size, optimizer, start_epoch, n_epochs, learning_rate):
 
         torch.cuda.empty_cache()
         
+        #Extracting accuracy of best model till now
+        dummy_model = Net()
+        dummy_optimizer = createOptimizer(dummy_model, learning_rate)
+        previous_best_accuracy = getBestModelAccuracy(dummy_model, dummy_optimizer, BEST_MODEL_PATH)
+
         #At the end of the epoch, do a pass on the validation set
         total_val_loss = 0
+        correct = 0
+        total = 0
         for inp, lab in Cval_loader:
             lab = lab.flatten()
             #print ("-------------------INPUTS SIZE-----------------", inp.size())
@@ -165,59 +172,30 @@ def trainNet(net, batch_size, optimizer, start_epoch, n_epochs, learning_rate):
             #print("-------------------OUTPUT------------------", val_outputs)
             val_loss_size = loss(val_outputs, labels)
             total_val_loss += val_loss_size.item()
+            _, predicted = torch.max(val_outputs.data, 1)
+            
+            #print ("-----------------PREDICTED SIZE-------------------", predicted.size())
+            total += labels.size(0)
+            correct += (predicted == labels).sum().item()
             
         print("Validation loss = {:.2f}".format(total_val_loss / len(Cval_loader)))
+        print ("correct values ", correct)
+        print ("total values ", total)
+        current_accuracy = 100 * correct / total
+        print('Current accuracy for validation phase is : %d %%' % (
+            current_accuracy))
+        
+        #Saving best model till now
+        if current_accuracy>previous_best_accuracy:
+            state = { 'accuracy': current_accuracy, 'state_dict': net.state_dict(), 'optimizer': optimizer.state_dict(), }
+            torch.save(state, BEST_MODEL_PATH)
+        
         torch.cuda.empty_cache()
-        
-        #Extracting accuracy of best model till now
-        dummy_model = Net()
-        dummy_optimizer = createOptimizer(dummy_model, learning_rate)
-        previous_best_accuracy = getBestModelAccuracy(dummy_model, dummy_optimizer, BEST_MODEL_PATH)
-        
-        test_transformations = torchvision.transforms.Compose([torchvision.transforms.ToTensor(),])
-
-        Ctest_dataset = Dataset(get_Ctest() ,transform=test_transformations)
-        Ctest_loader = DataLoader(Ctest_dataset, batch_size = batch_size, shuffle = True, num_workers = 4)
-        #TESTING
-        correct = 0
-        total = 0
-        with torch.no_grad():
-            for inp, lab in Ctest_loader:
-                lab = lab.flatten()
-                inputs = inp.cuda(device)
-                labels = lab.cuda(device)
-
-                inputs, labels = Variable(inputs), Variable(labels)
-                #print ("INPUTS ARE ", inputs)
-                #print ("LABELS ARE ", labels)
-                outputs = net(inputs)
-                #print ("OUTPUTS ARE ", outputs)
-                
-                #print ("------------------TESTING OUTPUTS------------------", outputs.size())
-                
-                _, predicted = torch.max(outputs.data, 1)
-                
-                #print ("-----------------PREDICTED SIZE-------------------", predicted.size())
-                
-                total += labels.size(0)
-                correct += (predicted == labels).sum().item()
-
-            print ("correct values ", correct)
-            print ("total values ", total)
-            current_accuracy = 100 * correct / total
-            print('Current accuracy for testing phase is : %d %%' % (
-                current_accuracy))
-            #Saving best model till now
-            if current_accuracy>previous_best_accuracy:
-                state = { 'accuracy': current_accuracy, 'state_dict': net.state_dict(), 'optimizer': optimizer.state_dict(), }
-                torch.save(state, BEST_MODEL_PATH)
-
-            torch.cuda.empty_cache()
 
     print("Training for phase 1 finished, took {:.2f}s".format(time.time() - training_start_time))
 
 #MAIN
-device = torch.device("cuda:3" if torch.cuda.is_available() else "cpu")
+device = torch.device("cuda:2" if torch.cuda.is_available() else "cpu")
 print (device)
 
 #path to save each training epoch
@@ -230,7 +208,7 @@ BEST_MODEL_PATH = 'best_model_phase_1.pth'
 
 net_phase_1 = Net()
 batch_size_phase_1 = 40
-learning_rate_phase_1 = 0.01
+learning_rate_phase_1 = 0.1
 optimizer = createOptimizer(net_phase_1, learning_rate_phase_1)
 
 net_phase_1, optimizer, start_epoch = load_checkpoints(net_phase_1, optimizer, PATH)

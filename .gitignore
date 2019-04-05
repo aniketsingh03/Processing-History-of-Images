@@ -112,3 +112,5 @@ best_model_phase_1.pth
 train_moments
 val_moments
 test_moments
+best_model_MLP.pth
+stats.log

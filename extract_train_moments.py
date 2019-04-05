@@ -12,8 +12,8 @@ def loadCheckpoints(model, PATH):
 		print("=> loading checkpoint '{}'".format(PATH))
 		checkpoint = torch.load(PATH)
 		model.load_state_dict(checkpoint['state_dict'])
-		print("=> loaded checkpoint '{}' (epoch {})"
-				  .format(PATH, checkpoint['epoch']))
+		print("=> loaded checkpoint '{}' (accuracy {})"
+				  .format(PATH, checkpoint['accuracy']))
 	else:
 		print("=> no checkpoint found at '{}'".format(PATH))
 
@@ -77,15 +77,15 @@ def extractTrainMoments(net):
 		num_of_images_processed+=1
 		if (image.size(1)<2048 or image.size(2)<2048):
 			print("Image number ", num_of_images_processed)
-			print ("SIZE OF IMAGE: ", image.size())
+			#print ("SIZE OF IMAGE: ", image.size())
 			image = image.unsqueeze(0)
-			print ("SIZE OF IMAGE TENSOR ON MEMORY IS ", image.element_size() * image.nelement())        
+			#print ("SIZE OF IMAGE TENSOR ON MEMORY IS ", image.element_size() * image.nelement())        
 			#Wrap them in a Variable object
 			img = image.cuda(device)
 			img = Variable(img)
 			#Forward pass to extract moments for phase 2(this will be done one image at a time)
 			single_moment = net(img, phase = 1)
-			print ("SIZE OF OUTPUT FROM MODEL ON DISK IS ", single_moment.element_size() * single_moment.nelement())
+			#print ("SIZE OF OUTPUT FROM MODEL ON DISK IS ", single_moment.element_size() * single_moment.nelement())
 			#print ("-------------SIZE OF SINGLE MOMENT-----------", single_moment.size())
 			output_image.append(single_moment.data[0])
 			output_labels.append(label)
@@ -95,11 +95,11 @@ def extractTrainMoments(net):
 
 			torch.cuda.empty_cache()
 
-device = torch.device("cuda:2" if torch.cuda.is_available() else "cpu")
+device = torch.device("cuda:1" if torch.cuda.is_available() else "cpu")
 print (device)
 
 #path to save each training epoch
-saved_model_filename = 'checkpoints.pth'
+saved_model_filename = 'best_model_phase_1.pth'
 saved_moments_filename = 'train_moments'
 
 net_phase_1 = Net()
