@@ -37,6 +37,21 @@ Ctest_loader = DataLoader(Ctest_dataset, batch_size = batch_size, shuffle = True
 
 correct = 0
 total = 0
+org_correct = 0
+org_total = 0
+
+high_correct = 0
+high_total = 0 
+
+low_correct = 0
+low_total = 0
+
+tonal_correct = 0
+tonal_total = 0
+
+denoise_correct = 0
+denoise_total = 0
+
 with torch.no_grad():
     for inp, lab in Ctest_loader:
         lab = lab.flatten()
@@ -58,8 +73,28 @@ with torch.no_grad():
         total += labels.size(0)
         correct += (predicted == labels).sum().item()
 
+        org_total += (labels==0).sum().item()
+        high_total += (labels==1).sum().item()
+        low_total += (labels==2).sum().item()
+        tonal_total += (labels==3).sum().item()
+        denoise_total += (labels==4).sum().item()
+
+        org_correct += torch.min(predicted==0, labels==0).sum().item()
+        high_correct += torch.min(predicted==1, labels==1).sum().item()
+        low_correct += torch.min(predicted==2, labels==2).sum().item()
+        tonal_correct += torch.min(predicted==3, labels==3).sum().item()
+        denoise_correct += torch.min(predicted==4, labels==4).sum().item()
+
+
     print ("correct values ", correct)
     print ("total values ", total)
     print('Accuracy of the network in the first phase is : %d %%' % (
         100 * correct / total))
+
+    print ("Accuracy for original images is {:.2f}".format(100 * org_correct / org_total))
+    print ("Accuracy for high pass filtering is {:.2f}".format(100 * high_correct / high_total))
+    print ("Accuracy for low pass filtering is {:.2f}".format(100 * low_correct / low_total))
+    print ("Accuracy for tonal adjustment is {:.2f}".format(100 * tonal_correct / tonal_total))
+    print ("Accuracy for denoising operation is {:.2f}".format(100 * denoise_correct /denoise_total))
+
     torch.cuda.empty_cache()

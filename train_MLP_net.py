@@ -109,7 +109,7 @@ def train_MLP_net(net, batch_size, optimizer, start_epoch, n_epochs, learning_ra
 	#Loop for n_epochs
 	for epoch in range(start_epoch, n_epochs):
 		running_loss = 0.0
-		print_every = n_batches // 100
+		print_every = n_batches // 10
 		print ("PRINT AFTER EVERY {} batches ".format(print_every))
 		start_time = time.time()
 		total_train_loss = 0
@@ -220,8 +220,8 @@ print (device)
 PATH = 'checkpoints_MLP.pth'
 BEST_MODEL_PATH = 'best_model_MLP.pth'
 net_phase_2 = MLPNet()
-batch_size_phase_2 = 100
-learning_rate_phase_2 = 0.001
+batch_size_phase_2 = 500
+learning_rate_phase_2 = 0.1
 optimizer = createOptimizer(net_phase_2, learning_rate_phase_2)
 
 net_phase_2, optimizer, start_epoch = load_checkpoints(net_phase_2, optimizer, PATH)
@@ -235,4 +235,4 @@ for state in optimizer.state.values():
 
 M_tr = (train_moments, train_labels)
 M_val = (val_moments, val_labels)
-train_MLP_net(net=net_phase_2, batch_size=batch_size_phase_2, optimizer=optimizer, start_epoch=start_epoch, n_epochs=1000, learning_rate=learning_rate_phase_2, M_tr=M_tr, M_val=M_val)
+train_MLP_net(net=net_phase_2, batch_size=batch_size_phase_2, optimizer=optimizer, start_epoch=start_epoch, n_epochs=100000, learning_rate=learning_rate_phase_2, M_tr=M_tr, M_val=M_val)
