@@ -22,7 +22,7 @@ for qFactor = qualityfactors
 end
 files = dir(fileFolder);
 numfiles = length(files);
-
+tic
 for k = 1:numfiles
   filepath = fullfile(files(k).folder, files(k).name);
   X = imread(filepath);
@@ -198,8 +198,11 @@ for k = 1:numfiles
 
   % org image
   x11 = down960(X);
+  x12 = down960(X);
+  x13 = down960(X);
   [xc1, xc2] = centrallyCrop(x11);
-
+  [xc3, xc4] = centrallyCrop(x12);
+  [xc5, xc6] = centrallyCrop(x13);
   for qFactor = qualityfactors
       folder = fullfile(lolfolder, int2str(qFactor));
       writectr = fullfile(folder, 'ctr/org');
@@ -208,11 +211,24 @@ for k = 1:numfiles
       imwrite(xc1, ctrpath, 'Quality',qFactor);
       ctrpath = fullfile(writectr, sprintf('%sc2.jpeg', name));
       imwrite(xc2, ctrpath, 'Quality',qFactor);
-      mtrpath = fullfile(writemtr, sprintf('%s.jpeg', name));
+      ctrpath = fullfile(writectr, sprintf('%sc3.jpeg', name));
+      imwrite(xc3, ctrpath, 'Quality',qFactor);
+      ctrpath = fullfile(writectr, sprintf('%sc4.jpeg', name));
+      imwrite(xc4, ctrpath, 'Quality',qFactor);
+      ctrpath = fullfile(writectr, sprintf('%sc5.jpeg', name));
+      imwrite(xc5, ctrpath, 'Quality',qFactor);
+      ctrpath = fullfile(writectr, sprintf('%sc6.jpeg', name));
+      imwrite(xc6, ctrpath, 'Quality',qFactor);
+      mtrpath = fullfile(writemtr, sprintf('%so1.jpeg', name));
       imwrite(x11, mtrpath, 'Quality',qFactor);
+      mtrpath = fullfile(writemtr, sprintf('%so2.jpeg', name));
+      imwrite(x12, mtrpath, 'Quality',qFactor);
+      mtrpath = fullfile(writemtr, sprintf('%so3.jpeg', name));
+      imwrite(x13, mtrpath, 'Quality',qFactor);
   end
   fprintf('%d of %d done\n', k, numfiles);
 end
+toc
 
 trainval = ["val" "test"];
 for i = trainval
