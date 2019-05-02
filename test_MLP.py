@@ -9,6 +9,7 @@ import time
 import torchvision
 import torch
 import pickle
+import sys
 
 def load_checkpoints(model, PATH):
     """load existing model pretrained to some epochs
@@ -41,19 +42,21 @@ def convertListsToTensors(moments, labels):
 
     return ret
 
-#TESTING
+#MAIN
+QF = sys.argv[1]
 device = torch.device("cuda:2" if torch.cuda.is_available() else "cpu")
 print (device)
 
 #path for the best model
-BEST_MODEL_PATH = 'checkpoints_MLP.pth'
+BEST_MODEL_PATH = QF+'/checkpoints_MLP.pth'
+saved_test_moments_filename = QF+'/test_moments'
+
 net = MLPNet()
 net = load_checkpoints(net, BEST_MODEL_PATH)
 
 #move model to cuda
 net = net.to(device)
 
-saved_test_moments_filename = "test_moments"
 test_moments, test_labels = loadSavedMoments(saved_test_moments_filename)
 test_moments, test_labels = convertListsToTensors(test_moments, test_labels)
 M_test = (test_moments, test_labels)

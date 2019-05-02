@@ -59,7 +59,7 @@ def extractTrainMoments(net):
 
 	#TODO currently the images in the datasets are of dimensions (batch_size x (3x1000x1000)) whereas in the paper
 	#it's mentioned as (batch_size x (1000x1000x3)), check for correctness
-	Mtr_dataset = get_Mtr()
+	Mtr_dataset = get_Mtr(QF)
 	print ("THE SIZE OF MTR DATASET IS ", sys.getsizeof(Mtr_dataset))
 	output_image, output_labels, num_images_already_processed = loadSavedMoments(saved_moments_filename)
 	num_of_images_processed = num_images_already_processed
@@ -95,12 +95,15 @@ def extractTrainMoments(net):
 
 			torch.cuda.empty_cache()
 
+#MAIN
+QF = sys.argv[1]
+
 device = torch.device("cuda:1" if torch.cuda.is_available() else "cpu")
 print (device)
 
 #path to save each training epoch
-saved_model_filename = 'best_model_phase_1.pth'
-saved_moments_filename = 'train_moments'
+saved_model_filename = QF+'/best_model_phase_1.pth'
+saved_moments_filename = QF+'/train_moments'
 
 net_phase_1 = Net()
 net_phase_1 = loadCheckpoints(net_phase_1, saved_model_filename)

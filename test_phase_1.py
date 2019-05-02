@@ -3,6 +3,7 @@ from torch.autograd import Variable
 from data_loader import *
 from network import *
 import torch
+import sys
 
 def load_checkpoints(model, PATH):
     if os.path.isfile(PATH):
@@ -16,12 +17,14 @@ def load_checkpoints(model, PATH):
 
     return model
 
-#TESTING
-device = torch.device("cuda:1" if torch.cuda.is_available() else "cpu")
+#MAIN
+QF = sys.argv[1]
+
+device = torch.device("cuda:3" if torch.cuda.is_available() else "cpu")
 print (device)
 
 #path for the best model
-PATH = 'best_model_phase_1.pth'
+PATH = QF+'/best_model_phase_1.pth'
 
 net_phase_1 = Net()
 net_phase_1 = load_checkpoints(net_phase_1, PATH)
@@ -32,7 +35,7 @@ net_phase_1 = net_phase_1.to(device)
 transformations = torchvision.transforms.Compose([torchvision.transforms.ToTensor(),])
 batch_size = 40
 
-Ctest_dataset = Dataset(get_Ctest() ,transform=transformations)
+Ctest_dataset = Dataset(get_Ctest(QF) ,transform=transformations)
 Ctest_loader = DataLoader(Ctest_dataset, batch_size = batch_size, shuffle = True, num_workers = 4)
 
 correct = 0

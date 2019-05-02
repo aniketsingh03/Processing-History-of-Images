@@ -106,6 +106,9 @@ venv.bak/
 .mypy_cache/
 
 #model checkpoints
+95/
+85/
+75/
 checkpoints.pth
 checkpoints_MLP.pth
 best_model_phase_1.pth

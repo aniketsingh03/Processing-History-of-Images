@@ -10,7 +10,7 @@ from PIL import Image
 
 # Dataset Parameters
 DATASET_PATH = 'dataset/jpegs'
-QF = '95'
+#QF = '95'
 
 LABEL = {
     'org' : 0,
@@ -20,27 +20,27 @@ LABEL = {
     'denoise' : 4,
 }
 
-def get_Ctr():
+def get_Ctr(QF):
     C_tr = read_images(os.path.join(DATASET_PATH, 'train/'+QF+'/ctr'), shuffle=True) #(512x512) images
     return C_tr
 
-def get_Mtr():
+def get_Mtr(QF):
     M_tr = read_images(os.path.join(DATASET_PATH, 'train/'+QF+'/mtr')) #arbitrarily sized images
     return M_tr
 
-def get_Cval():
+def get_Cval(QF):
     C_val = read_images(os.path.join(DATASET_PATH, 'val/'+QF+'/ctr'), shuffle=True) #(512x512) images
     return C_val
 
-def get_Mval():
+def get_Mval(QF):
     M_val = read_images(os.path.join(DATASET_PATH, 'val/'+QF+'/mtr')) #arbitrarily sized images
     return M_val
 
-def get_Ctest():
+def get_Ctest(QF):
     C_test = read_images(os.path.join(DATASET_PATH, 'test/'+QF+'/ctr'), shuffle=True) #(512x512) images
     return C_test
 
-def get_Mtest():
+def get_Mtest(QF):
     M_test = read_images(os.path.join(DATASET_PATH, 'test/'+QF+'/mtr')) #arbitrarily sized images
     return M_test
 
