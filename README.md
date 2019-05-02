@@ -110,5 +110,4 @@ The accuracies and other parameters used while training the models are mentioned
 
 ## Contributors
 - Aniket Singh
-- [Shivanshu Raj Srivastava](https://github.com/shivanshu1333)
 - [Vishal Sharma](https://github.com/VishalCR7)
